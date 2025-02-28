@@ -34,13 +34,13 @@ class _BuildSingleDayPickerState extends State<BuildSingleDayPicker> {
             selectedCellTextStyle: Theme.of(context).textTheme.bodyLarge,
             currentDateDecoration: BoxDecoration(
               border: Border.all(
-                color: AppColors.primaryColorGreen.withOpacity(0.3),
+                color: AppColors.primaryColorOrange.withOpacity(0.3),
                 width: 2,
               ),
               shape: BoxShape.circle,
             ),
             selectedCellDecoration: const BoxDecoration(
-                shape: BoxShape.circle, color: AppColors.primaryColorGreen),
+                shape: BoxShape.circle, color: AppColors.primaryColorOrange),
             currentDateTextStyle: Theme.of(context).textTheme.bodyLarge,
             daysOfTheWeekTextStyle:
                 Theme.of(context).textTheme.bodyMedium!.copyWith(
@@ -50,10 +50,10 @@ class _BuildSingleDayPickerState extends State<BuildSingleDayPicker> {
             enabledCellsTextStyle: Theme.of(context).textTheme.bodyMedium,
             leadingDateTextStyle: Theme.of(context).textTheme.headlineMedium,
             initialPickerType: PickerType.days,
-            slidersColor: AppColors.primaryColorGreen,
-            highlightColor: AppColors.primaryColorGreen.withOpacity(0.1),
+            slidersColor: AppColors.primaryColorOrange,
+            highlightColor: AppColors.primaryColorOrange.withOpacity(0.1),
             slidersSize: 20,
-            splashColor: AppColors.primaryColorGreen.withOpacity(0.2),
+            splashColor: AppColors.primaryColorOrange.withOpacity(0.2),
             centerLeadingDate: true,
             onDateSelected: (date) {
               setState(() {
@@ -66,7 +66,7 @@ class _BuildSingleDayPickerState extends State<BuildSingleDayPicker> {
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: BuildElevatedButton(
-              backgroundColor: AppColors.primaryColorGreen,
+              backgroundColor: AppColors.primaryColorOrange,
               height: screenHeight(context, dividedBy: 22),
               child: null,
               txt: "Save",

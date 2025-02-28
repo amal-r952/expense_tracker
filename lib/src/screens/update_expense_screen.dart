@@ -256,7 +256,7 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
           height: screenHeight(context, dividedBy: 18),
           child: null,
           txt: "UPDATE",
-          backgroundColor: AppColors.primaryColorGreen,
+          backgroundColor: AppColors.primaryColorOrange,
           onTap: _updateExpense,
         ),
       ),

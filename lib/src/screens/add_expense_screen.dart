@@ -219,7 +219,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(20.0),
         child: BuildElevatedButton(
-            backgroundColor: AppColors.primaryColorGreen,
+            backgroundColor: AppColors.primaryColorOrange,
             width: screenWidth(
               context,
             ),

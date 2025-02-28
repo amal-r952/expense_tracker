@@ -12,7 +12,7 @@ final ThemeData lightThemeData = ThemeData(
   scaffoldBackgroundColor: AppColors.primaryColorLight,
   textTheme: lightTextTheme,
   cardColor: AppColors.lightGrey,
-  shadowColor: AppColors.primaryColorGreen,
+  shadowColor: AppColors.primaryColorOrange,
   dividerColor: AppColors.darkGrey,
   appBarTheme: lightAppBarTheme,
 );

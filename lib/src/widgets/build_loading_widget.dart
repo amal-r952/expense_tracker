@@ -15,7 +15,7 @@ class BuildLoadingWidget extends StatelessWidget {
       width: 40,
       child: LoadingIndicator(
         indicatorType: Indicator.ballRotateChase,
-        colors: color != null ? [color!] : [AppColors.primaryColorGreen],
+        colors: color != null ? [color!] : [AppColors.primaryColorOrange],
         strokeWidth: 2,
       ),
     );

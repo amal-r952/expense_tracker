@@ -11,7 +11,7 @@ final ThemeData darkThemeData = ThemeData(
     brightness: Brightness.dark,
     scaffoldBackgroundColor: AppColors.primaryColorDark,
     cardColor: AppColors.darkGrey,
-    shadowColor: AppColors.primaryColorGreen,
+    shadowColor: AppColors.primaryColorOrange,
     textTheme: darkTextTheme,
     appBarTheme: darkAppbarTheme,
     dividerColor: AppColors.lightGrey);

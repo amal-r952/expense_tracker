@@ -145,7 +145,7 @@ class BuildTextField extends StatelessWidget {
           counterText: showCounterText == true ? null : "",
           errorStyle: TextStyle(
             color: errorBorderColor ??
-                AppColors.primaryColorGreen.withOpacity(0.7),
+                AppColors.primaryColorOrange.withOpacity(0.7),
             fontWeight: FontWeight.w300,
             fontFamily: FontFamily.gothamBook,
             fontSize: 11,
@@ -179,7 +179,7 @@ class BuildTextField extends StatelessWidget {
             borderRadius: BorderRadius.circular(borderRadius ?? 12.0),
             borderSide: BorderSide(
               color: showAlwaysErrorBorder
-                  ? (errorBorderColor ?? AppColors.primaryColorGreen)
+                  ? (errorBorderColor ?? AppColors.primaryColorOrange)
                   : Colors.transparent,
             ),
             gapPadding: 0,
@@ -188,7 +188,7 @@ class BuildTextField extends StatelessWidget {
             borderRadius: BorderRadius.circular(borderRadius ?? 12.0),
             borderSide: BorderSide(
               color: showAlwaysErrorBorder
-                  ? (errorBorderColor ?? AppColors.primaryColorGreen)
+                  ? (errorBorderColor ?? AppColors.primaryColorOrange)
                   : Colors.transparent,
             ),
             gapPadding: 0,
@@ -197,7 +197,7 @@ class BuildTextField extends StatelessWidget {
             borderRadius: BorderRadius.circular(borderRadius ?? 12.0),
             borderSide: BorderSide(
               color: showAlwaysErrorBorder
-                  ? (errorBorderColor ?? AppColors.primaryColorGreen)
+                  ? (errorBorderColor ?? AppColors.primaryColorOrange)
                   : Colors.transparent,
             ),
           ),
@@ -205,7 +205,7 @@ class BuildTextField extends StatelessWidget {
             borderRadius: BorderRadius.circular(borderRadius ?? 12.0),
             borderSide: BorderSide(
               color: showAlwaysErrorBorder
-                  ? (errorBorderColor ?? AppColors.primaryColorGreen)
+                  ? (errorBorderColor ?? AppColors.primaryColorOrange)
                   : Colors.transparent,
             ),
             gapPadding: 0,

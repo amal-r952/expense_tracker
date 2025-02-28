@@ -137,7 +137,8 @@ class _ViewExpensesScreenState extends State<ViewExpensesScreen>
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primaryColorGreen.withOpacity(0.6),
+                            color:
+                                AppColors.primaryColorOrange.withOpacity(0.6),
                             blurRadius: 6,
                             offset: const Offset(0, 2),
                           ),
@@ -252,7 +253,7 @@ class _ViewExpensesScreenState extends State<ViewExpensesScreen>
               onPressed: () {
                 push(context, AddExpenseScreen());
               },
-              backgroundColor: AppColors.primaryColorGreen,
+              backgroundColor: AppColors.primaryColorOrange,
               shape: const CircleBorder(),
               child: const Icon(
                 Icons.add,
