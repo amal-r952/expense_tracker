@@ -14,25 +14,51 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
 
-class AddExpenseScreen extends StatefulWidget {
+class EditExpenseScreen extends StatefulWidget {
+  final int index;
+  final Expense expense;
+
+  const EditExpenseScreen({
+    Key? key,
+    required this.index,
+    required this.expense,
+  }) : super(key: key);
+
   @override
-  _AddExpenseScreenState createState() => _AddExpenseScreenState();
+  _EditExpenseScreenState createState() => _EditExpenseScreenState();
 }
 
-class _AddExpenseScreenState extends State<AddExpenseScreen> {
+class _EditExpenseScreenState extends State<EditExpenseScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController categoryController = TextEditingController();
-  final TextEditingController amountController = TextEditingController();
-  final TextEditingController notesController = TextEditingController();
-  final TextEditingController dateController = TextEditingController();
-  DateTime selectedDate = DateTime.now();
-  final Box<Expense> expenseBox = Hive.box<Expense>('expenses');
-
+  late TextEditingController categoryController;
+  late TextEditingController amountController;
+  late TextEditingController notesController;
+  late TextEditingController dateController;
+  late DateTime selectedDate;
+  late Box<Expense> expenseBox;
+  File? _pickedImage;
   List<String> dropDownItems = Constants.categories;
 
-  File? _pickedImage;
+  @override
+  void initState() {
+    super.initState();
+    expenseBox = Hive.box<Expense>('expenses');
+    selectedDate = widget.expense.date;
 
-  void _pickDate(BuildContext context, TextEditingController controller) async {
+    categoryController = TextEditingController(text: widget.expense.category);
+    amountController =
+        TextEditingController(text: widget.expense.amount.toString());
+    notesController = TextEditingController(text: widget.expense.notes);
+    dateController = TextEditingController(
+        text: selectedDate.toIso8601String().split('T')[0]);
+
+    if (widget.expense.imageUrl != null &&
+        widget.expense.imageUrl!.isNotEmpty) {
+      _pickedImage = File(widget.expense.imageUrl!);
+    }
+  }
+
+  Future<void> _pickDate(BuildContext context) async {
     DateTime? pickedDate = await showDialog<DateTime>(
       context: context,
       builder: (context) => Dialog(
@@ -50,7 +76,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     if (pickedDate != null) {
       setState(() {
         selectedDate = pickedDate;
-        controller.text = "${pickedDate.toLocal()}".split(' ')[0];
+        dateController.text = "${pickedDate.toLocal()}".split(' ')[0];
       });
     }
   }
@@ -65,18 +91,32 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     }
   }
 
-  @override
-  void initState() {
-    categoryController.text = dropDownItems[0];
-    dateController.text = selectedDate.toIso8601String().split('T')[0];
-    super.initState();
+  void _updateExpense() {
+    if (amountController.text.isEmpty || categoryController.text.isEmpty) {
+      AppToasts.showErrorToastTop(
+          context, "Please fill in all the necessary fields!");
+      return;
+    }
+
+    final updatedExpense = Expense(
+      category: categoryController.text,
+      amount: double.tryParse(amountController.text) ?? 0.0,
+      date: selectedDate,
+      notes: notesController.text,
+      imageUrl: _pickedImage?.path ?? widget.expense.imageUrl,
+    );
+
+    expenseBox.putAt(widget.index, updatedExpense);
+    AppToasts.showSuccessToastTop(context, "Expense updated successfully!");
+
+    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const BuildCustomAppBarWidget(
-        title: "Add Expense",
+        title: "Edit Expense",
         showBackButton: true,
       ),
       body: Padding(
@@ -86,7 +126,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Text(
                   ' Category',
@@ -96,17 +135,16 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                       ),
                 ),
                 const SizedBox(height: 10),
-
                 BuildCustomDropdownWidget(
-                    dropDownItems: dropDownItems,
-                    onChanged: (value) {
-                      setState(() {
-                        categoryController.text = value;
-                      });
-                    }),
-
+                  dropDownItems: dropDownItems,
+                  initialItem: categoryController.text,
+                  onChanged: (value) {
+                    setState(() {
+                      categoryController.text = value;
+                    });
+                  },
+                ),
                 const SizedBox(height: 15),
-
                 Text(
                   ' Amount',
                   style: Theme.of(context).textTheme.headlineLarge?.copyWith(
@@ -119,14 +157,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   fillColor: Theme.of(context).cardColor,
                   textColor: Theme.of(context).dividerColor,
                   textEditingController: amountController,
-                  enable: true,
                   hintText: 'Enter the amount',
-                  showBorder: true,
                   keyboardType: TextInputType.number,
+                  showBorder: true,
                   showAlwaysErrorBorder: false,
                 ),
                 const SizedBox(height: 15),
-
                 Text(
                   ' Notes',
                   style: Theme.of(context).textTheme.headlineLarge?.copyWith(
@@ -136,12 +172,11 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 ),
                 const SizedBox(height: 10),
                 BuildTextField(
-                  fillColor: Theme.of(context).cardColor,
-                  textColor: Theme.of(context).dividerColor,
                   textEditingController: notesController,
-                  enable: true,
                   maxLines: 3,
                   hintText: 'Additional details',
+                  fillColor: Theme.of(context).cardColor,
+                  textColor: Theme.of(context).dividerColor,
                   showBorder: true,
                   showAlwaysErrorBorder: false,
                 ),
@@ -154,36 +189,26 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                       ),
                 ),
                 const SizedBox(height: 10),
-                // Pick Date Button
                 GestureDetector(
-                  onTap: () => _pickDate(context, dateController),
+                  onTap: () => _pickDate(context),
                   child: Container(
                     width: screenWidth(context),
-                    height: screenHeight(context, dividedBy: 18),
                     padding: const EdgeInsets.all(12.0),
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(12.0),
                     ),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        dateController.text.isEmpty
-                            ? "Select the day"
-                            : dateController.text,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontSize: 12,
-                              color: dateController.text.isEmpty
-                                  ? AppColors.textFieldHintColor
-                                  : Theme.of(context).dividerColor,
-                              fontWeight: FontWeight.w400,
-                            ),
-                      ),
+                    child: Text(
+                      dateController.text,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontSize: 12,
+                            color: Theme.of(context).dividerColor,
+                            fontWeight: FontWeight.w400,
+                          ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 20),
-
                 GestureDetector(
                   onTap: _pickImage,
                   child: Container(
@@ -192,7 +217,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(12.0),
-                      shape: BoxShape.rectangle,
                       border: Border.all(
                           color: Theme.of(context).dividerColor, width: 0.5),
                       image: _pickedImage != null
@@ -200,15 +224,22 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                               image: FileImage(_pickedImage!),
                               fit: BoxFit.cover,
                             )
-                          : null,
+                          : (widget.expense.imageUrl!.isNotEmpty
+                              ? DecorationImage(
+                                  image:
+                                      FileImage(File(widget.expense.imageUrl!)),
+                                  fit: BoxFit.cover,
+                                )
+                              : null),
                     ),
-                    child: _pickedImage == null
-                        ? Center(
-                            child: Icon(Icons.add,
-                                size: 40,
-                                color: Theme.of(context).dividerColor),
-                          )
-                        : null,
+                    child:
+                        _pickedImage == null && widget.expense.imageUrl!.isEmpty
+                            ? Center(
+                                child: Icon(Icons.add,
+                                    size: 40,
+                                    color: Theme.of(context).dividerColor),
+                              )
+                            : null,
                   ),
                 ),
               ],
@@ -219,35 +250,15 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(20.0),
         child: BuildElevatedButton(
-            backgroundColor: AppColors.primaryColorGreen,
-            width: screenWidth(
-              context,
-            ),
-            height: screenHeight(context, dividedBy: 18),
-            child: null,
-            txt: "ADD EXPENSE",
-            onTap: () {
-              if (amountController.text.isEmpty ||
-                  categoryController.text.isEmpty) {
-                AppToasts.showErrorToastTop(
-                    context, "Please add all the necessary fields!");
-                return;
-              }
-
-              expenseBox.add(
-                Expense(
-                  category: categoryController.text,
-                  amount: double.tryParse(amountController.text) ?? 0.0,
-                  date: selectedDate,
-                  notes: notesController.text,
-                  imageUrl: _pickedImage?.path ?? '',
-                ),
-              );
-              AppToasts.showSuccessToastTop(
-                  context, "Expense added successfully!");
-
-              Navigator.pop(context);
-            }),
+          width: screenWidth(
+            context,
+          ),
+          height: screenHeight(context, dividedBy: 18),
+          child: null,
+          txt: "UPDATE",
+          backgroundColor: AppColors.primaryColorGreen,
+          onTap: _updateExpense,
+        ),
       ),
     );
   }

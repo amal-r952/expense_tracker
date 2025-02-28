@@ -4,15 +4,14 @@ import 'dart:io';
 import 'package:expense_tracker/src/models/expense_model.dart';
 import 'package:expense_tracker/src/screens/add_expense_screen.dart';
 import 'package:expense_tracker/src/screens/settings_screen.dart';
+import 'package:expense_tracker/src/screens/update_expense_screen.dart';
 import 'package:expense_tracker/src/utils/app_colors.dart';
 import 'package:expense_tracker/src/utils/app_toast.dart';
 import 'package:expense_tracker/src/utils/object_factory.dart';
 import 'package:expense_tracker/src/utils/utils.dart';
 import 'package:expense_tracker/src/widgets/build_custom_appbar_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:intl/intl.dart';
 import 'package:local_auth/local_auth.dart';
 
 class ViewExpensesScreen extends StatefulWidget {
@@ -189,7 +188,7 @@ class _ViewExpensesScreenState extends State<ViewExpensesScreen>
                                       .textTheme
                                       .titleMedium
                                       ?.copyWith(
-                                        fontWeight: FontWeight.bold,
+                                        fontWeight: FontWeight.w400,
                                       ),
                                 ),
                                 const SizedBox(height: 4),
@@ -221,9 +220,25 @@ class _ViewExpensesScreenState extends State<ViewExpensesScreen>
                           ),
 
                           // Delete Button
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () => _deleteExpense(index),
+                          Column(
+                            children: [
+                              IconButton(
+                                icon:
+                                    const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => _deleteExpense(index),
+                              ),
+                              IconButton(
+                                icon:
+                                    const Icon(Icons.edit, color: Colors.green),
+                                onPressed: () => push(
+                                  context,
+                                  EditExpenseScreen(
+                                    expense: expense,
+                                    index: index,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),

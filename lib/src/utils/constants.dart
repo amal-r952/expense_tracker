@@ -12,9 +12,17 @@ class Constants {
     Colors.red,
   ];
 
+  static List<String> categories = [
+    "Food",
+    "Travel",
+    "Shopping",
+    "Health",
+    "Entertainment",
+    "Others",
+  ];
+
   ///API Keys
-  static const String placesSearchAPIKey =
-      "AIzaSyDG48do4UIzzV5FLa94Fk0YNPhuETHDWic";
+  static const String placesSearchAPIKey = "";
 
   ///error
   static const String SOME_ERROR_OCCURRED = "Some error occurred.";
