@@ -31,6 +31,11 @@ Cashwise is a **Flutter-based expense tracker app** designed to help users manag
     - The project includes a **GitHub Actions workflow** that builds the APK and automatically
       creates a new release.
 
+## 📹 Video  
+
+[Watch Demo](https://drive.google.com/file/d/17xar_AJ8MKtifprDH_Rb4K7KTmzckA0g/view?usp=drivesdk)  
+
+
 ---
 
 ## 🚀 **Installation**
