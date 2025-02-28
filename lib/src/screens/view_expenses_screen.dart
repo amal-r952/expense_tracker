@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:expense_tracker/src/models/expense_model.dart';
 import 'package:expense_tracker/src/screens/add_expense_screen.dart';
-import 'package:expense_tracker/src/screens/settings_screen.dart';
 import 'package:expense_tracker/src/screens/update_expense_screen.dart';
 import 'package:expense_tracker/src/utils/app_colors.dart';
 import 'package:expense_tracker/src/utils/app_toast.dart';
@@ -99,15 +98,15 @@ class _ViewExpensesScreenState extends State<ViewExpensesScreen>
   Widget build(BuildContext context) {
     return getIsAuthenticated()
         ? Scaffold(
-            appBar: BuildCustomAppBarWidget(
+            appBar: const BuildCustomAppBarWidget(
               title: "My expenses",
               showBackButton: false,
-              showTrailingIcon: true,
-              trailingIcon: const Icon(Icons.settings),
-              onTrailingIconPressed: () {
-                push(context, const SettingsScreen());
-              },
-              trailingIconSize: 25,
+              // showTrailingIcon: true,
+              // trailingIcon: const Icon(Icons.settings),
+              // onTrailingIconPressed: () {
+              //   push(context, const SettingsScreen());
+              // },
+              // trailingIconSize: 25,
             ),
             body: ValueListenableBuilder(
               valueListenable: expenseBox.listenable(),
