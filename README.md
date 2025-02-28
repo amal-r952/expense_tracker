@@ -27,6 +27,10 @@ Cashwise is a **Flutter-based expense tracker app** designed to help users manag
 - **💾 Hive Database for Local Storage**
     - **Fast and lightweight** NoSQL database for **secure** and **efficient** expense tracking.
 
+- **🚀 Automatic GitHub Release**
+    - The project includes a **GitHub Actions workflow** that builds the APK and automatically
+      creates a new release.
+
 ---
 
 ## 🚀 **Installation**
