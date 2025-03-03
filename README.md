@@ -24,16 +24,38 @@ Cashwise is a **Flutter-based expense tracker app** designed to help users manag
 - **📂 Category Dropdown**
     - Choose expense categories effortlessly from a **dropdown menu**.
 
-- **💾 Hive Database for Local Storage**
-    - **Fast and lightweight** NoSQL database for **secure** and **efficient** expense tracking.
+- **☁️ Firebase for Online Database**
+    - **Real-time synchronization** across multiple devices.
+    - **Secure** and **scalable** NoSQL database for efficient expense tracking.
+
+- **🗂 Supabase for File Storage**
+    - **Store receipts** securely with easy retrieval.
+    - **Fast and reliable** cloud storage solution.
 
 - **🚀 Automatic GitHub Release**
     - The project includes a **GitHub Actions workflow** that builds the APK and automatically
       creates a new release.
+      
+- **🔑 Google Sign-In for Multi-Device Support**
+    - **Seamless authentication** using Firebase Authentication.
+    - **Access expenses across multiple devices** with a single Google account.
+
+- **📊 Monthly Budgeting & Progress Tracking**
+    - **Set monthly budgets** for different categories.
+    - **Monitor spending progress** dynamically with real-time updates.
+
+- **💱 Integrated Currency APIs**
+    - **Automatic currency conversion** for international users.
+    - **Real-time exchange rates** ensure accurate expense tracking.
+
+- **🎯 BLoC for State Management**
+    - **Efficient and scalable** state management using the BLoC pattern.
+    - **Enhances app performance** and ensures predictable UI updates.
+
 
 ## 📹 Video  
 
-[Watch Demo](https://drive.google.com/file/d/17xar_AJ8MKtifprDH_Rb4K7KTmzckA0g/view?usp=drivesdk)  
+[Watch Demo]([https://drive.google.com/file/d/17xar_AJ8MKtifprDH_Rb4K7KTmzckA0g/view?usp=drivesdk](https://drive.google.com/file/d/1AC3oyIpBxPvwnA3kz5796-ys33_x3Dny/view))  
 
 
 ---
@@ -78,9 +100,8 @@ flutter build apk
 
 ## 🗄️ **Database**
 
-Cashwise uses **Hive**, a **lightweight and high-performance NoSQL database** for storing expense records locally. Hive ensures **fast read/write operations** and works seamlessly with Flutter.
+Cashwise uses **Firebase Firestore**, a **scalable and real-time NoSQL database** for storing expense records securely online. Supabase is integrated for **efficient and reliable file storage**, ensuring seamless access to receipts and other documents across devices.
 
----
 
 ## 👨‍💻 **Author**
 
