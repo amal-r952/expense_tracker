@@ -21,8 +21,25 @@ class Constants {
     "Others",
   ];
 
+  static List<String> currencies = [
+    "INR - Indian Rupee",
+    "USD - United States Dollar",
+    "EUR - Euro",
+    "GBP - British Pound Sterling",
+    "JPY - Japanese Yen",
+    "AUD - Australian Dollar",
+    "CAD - Canadian Dollar",
+    "CHF - Swiss Franc",
+    "CNY - Chinese Yuan Renminbi",
+    "SGD - Singapore Dollar"
+  ];
+
+
   ///API Keys
   static const String placesSearchAPIKey = "";
+  static const String currencyApiKey = "fca_live_QsUFEaUEkEbeDHfFhc8Mkpk6OruuCleVLWafc8uZ";
+ static const supabaseUrl = 'https://bnbsxstdgnypjnvsxack.supabase.co';
+static const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuYnN4c3RkZ255cGpudnN4YWNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEwMDIwODYsImV4cCI6MjA1NjU3ODA4Nn0.udbBhcn4rsD6_4Uza3QIPXy9O1uIexSvzLTyJm4TFYc";
 
   ///error
   static const String SOME_ERROR_OCCURRED = "Some error occurred.";

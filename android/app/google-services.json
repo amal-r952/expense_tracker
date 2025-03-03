@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "195724544751",
+    "project_id": "cashwise-ee2d6",
+    "storage_bucket": "cashwise-ee2d6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:195724544751:android:88e92f1a473e07a5a4e91a",
+        "android_client_info": {
+          "package_name": "com.amalreji.cashwise"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAnK3GygeO_md-V3u5tiFe9QiFsaW-4dyo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

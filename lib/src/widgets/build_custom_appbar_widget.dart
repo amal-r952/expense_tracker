@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:expense_tracker/src/utils/utils.dart';
 
-class BuildCustomAppBarWidget extends StatelessWidget
+class BuildCustomAppBarWidget extends StatefulWidget
     implements PreferredSizeWidget {
   final String title;
   final bool centerTitle;
@@ -25,18 +25,27 @@ class BuildCustomAppBarWidget extends StatelessWidget
   }) : super(key: key);
 
   @override
+  _BuildCustomAppBarWidgetState createState() =>
+      _BuildCustomAppBarWidgetState();
+
+  @override
+  Size get preferredSize => Size.fromHeight(preferredHeight);
+}
+
+class _BuildCustomAppBarWidgetState extends State<BuildCustomAppBarWidget> {
+  @override
   Widget build(BuildContext context) {
     return AppBar(
       title: Text(
-        title,
+        widget.title,
         style: Theme.of(context)
             .textTheme
             .headlineLarge
             ?.copyWith(fontWeight: FontWeight.w800, fontSize: 22),
       ),
-      centerTitle: centerTitle,
+      centerTitle: widget.centerTitle,
       backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-      leading: showBackButton
+      leading: widget.showBackButton
           ? IconButton(
               icon: Icon(
                 Icons.arrow_back,
@@ -47,18 +56,15 @@ class BuildCustomAppBarWidget extends StatelessWidget
               },
             )
           : null,
-      actions: showTrailingIcon && trailingIcon != null
+      actions: widget.showTrailingIcon && widget.trailingIcon != null
           ? [
               IconButton(
-                iconSize: trailingIconSize ?? 24.0,
-                icon: trailingIcon!,
-                onPressed: onTrailingIconPressed,
+                iconSize: widget.trailingIconSize ?? 24.0,
+                icon: widget.trailingIcon!,
+                onPressed: widget.onTrailingIconPressed,
               ),
             ]
           : null,
     );
   }
-
-  @override
-  Size get preferredSize => Size.fromHeight(preferredHeight);
 }

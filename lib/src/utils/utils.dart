@@ -1,4 +1,6 @@
+import 'package:expense_tracker/src/utils/object_factory.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -41,24 +43,44 @@ lauchUrl({required String url}) async {
 }
 
 
-String formatDate(DateTime date) {
-  String day = DateFormat('d').format(date);
-  String suffix = getDaySuffix(int.parse(day));
-  return "$day$suffix ${DateFormat('MMMM yyyy hh:mm a').format(date)}";
+String formatTime(DateTime dateTime, {bool showTime = false}) {
+  int day = dateTime.day;
+
+  String suffix = "th";
+  if (day % 10 == 1 && day != 11) {
+    suffix = "st";
+  } else if (day % 10 == 2 && day != 12) {
+    suffix = "nd";
+  } else if (day % 10 == 3 && day != 13) {
+    suffix = "rd";
+  }
+
+  String formattedDate = "$day$suffix ${DateFormat('MMMM yyyy').format(dateTime)}";
+
+  if (showTime) {
+    String formattedTime = DateFormat('hh:mm a').format(dateTime);
+    formattedDate += " $formattedTime";
+  }
+
+  return formattedDate;
+}
+Future<XFile?> pickImage() async {
+  XFile? result = await ImagePicker().pickImage(source: ImageSource.gallery);
+
+  if (result != null) {
+    return result;
+  } else {
+    return null;
+  }
 }
 
-String getDaySuffix(int day) {
-  if (day >= 11 && day <= 13) {
-    return 'th';
-  }
-  switch (day % 10) {
-    case 1:
-      return 'st';
-    case 2:
-      return 'nd';
-    case 3:
-      return 'rd';
-    default:
-      return 'th';
-  }
+
+
+  double convertFromINR(double amountInINR, double conversionRate) {
+  return amountInINR * conversionRate;
+}
+
+double convertToINR(double amount, double conversionRate) {
+  if (conversionRate == 0) return 0.0; 
+  return amount / conversionRate;
 }

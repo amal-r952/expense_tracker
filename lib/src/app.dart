@@ -1,5 +1,7 @@
 import 'package:expense_tracker/src/screens/add_expense_screen.dart';
+import 'package:expense_tracker/src/screens/login_screen.dart';
 import 'package:expense_tracker/src/screens/view_expenses_screen.dart';
+import 'package:expense_tracker/src/utils/object_factory.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:expense_tracker/src/theme/app_theme/app_theme_data.dart';
@@ -22,7 +24,9 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppThemeData.lightTheme,
       themeMode: ThemeMode.system,
-      home: ViewExpensesScreen(),
+      home: ObjectFactory().appHive.getIsLoggedIn()
+          ? const ViewExpensesScreen()
+          : const LoginScreen(),
     );
   }
 }

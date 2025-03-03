@@ -1,19 +1,28 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:expense_tracker/src/models/expense_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:expense_tracker/src/bloc/expense_bloc.dart';
+import 'package:expense_tracker/src/models/expense_response_model.dart';
 import 'package:expense_tracker/src/screens/add_expense_screen.dart';
+import 'package:expense_tracker/src/screens/settings_screen.dart';
 import 'package:expense_tracker/src/screens/update_expense_screen.dart';
 import 'package:expense_tracker/src/utils/app_colors.dart';
 import 'package:expense_tracker/src/utils/app_toast.dart';
+import 'package:expense_tracker/src/utils/constants.dart';
 import 'package:expense_tracker/src/utils/object_factory.dart';
 import 'package:expense_tracker/src/utils/utils.dart';
 import 'package:expense_tracker/src/widgets/build_custom_appbar_widget.dart';
+import 'package:expense_tracker/src/widgets/build_custom_dropdown_widget.dart';
+import 'package:expense_tracker/src/widgets/build_elevated_button.dart';
+import 'package:expense_tracker/src/widgets/build_expense_item_tile_widget.dart';
+import 'package:expense_tracker/src/widgets/build_loading_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:local_auth/local_auth.dart';
 
 class ViewExpensesScreen extends StatefulWidget {
+  static List<ExpenseResponseModel> expenses = [];
   const ViewExpensesScreen({Key? key}) : super(key: key);
 
   @override
@@ -22,9 +31,62 @@ class ViewExpensesScreen extends StatefulWidget {
 
 class _ViewExpensesScreenState extends State<ViewExpensesScreen>
     with WidgetsBindingObserver {
-  late Box<Expense> expenseBox;
+  ExpenseBloc expenseBloc = ExpenseBloc();
   final LocalAuthentication auth = LocalAuthentication();
   Timer? _lockTimer;
+  String selectedOption = "1";
+  bool isLoading = false;
+  bool isLoadingAdditionalData = false;
+  String selectedCategory = Constants.categories[0];
+
+  DocumentSnapshot? lastDocument;
+  ScrollController scrollController = ScrollController();
+  getAdditionalData() async {
+    if (isLoadingAdditionalData || lastDocument == null)
+      return; // Prevent duplicate calls
+
+    setState(() {
+      isLoadingAdditionalData = true;
+    });
+
+    final prevLength = ViewExpensesScreen.expenses.length;
+
+    await expenseBloc.getExpenses(
+      category: selectedOption == "1" ? "" : selectedCategory,
+      lastDocument: lastDocument,
+    );
+
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    setState(() {
+      isLoadingAdditionalData = false;
+      if (ViewExpensesScreen.expenses.length == prevLength) {
+        lastDocument = null;
+      }
+    });
+  }
+
+  onScroll() {
+    print("IS FETCHING ADDITIONAL DATA 1");
+    if (scrollController.position.pixels >=
+            scrollController.position.maxScrollExtent - 100 &&
+        !isLoadingAdditionalData &&
+        lastDocument != null) {
+      print("IS FETCHING ADDITIONAL DATA");
+      getAdditionalData();
+    }
+  }
+
+  getData() {
+    setState(() {
+      isLoading = true;
+    });
+    lastDocument = null;
+    ViewExpensesScreen.expenses.clear();
+    expenseBloc.getExpenses(
+        category: selectedOption == "1" ? "" : selectedCategory,
+        lastDocument: lastDocument);
+  }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
@@ -73,7 +135,7 @@ class _ViewExpensesScreenState extends State<ViewExpensesScreen>
   }
 
   bool getIsAuthenticated() {
-    return ObjectFactory().appHive.getIsAuthenticated() ?? false;
+    return ObjectFactory().appHive.getIsAuthenticated();
   }
 
   void putIsAuthenticated(bool value) {
@@ -84,173 +146,120 @@ class _ViewExpensesScreenState extends State<ViewExpensesScreen>
   @override
   void initState() {
     super.initState();
+    scrollController.addListener(onScroll);
     WidgetsBinding.instance.addObserver(this);
-    expenseBox = Hive.box<Expense>('expenses');
     _authenticateUser();
-  }
 
-  void _deleteExpense(int index) {
-    expenseBox.deleteAt(index);
-    AppToasts.showSuccessToastTop(context, "Expense deleted successfully");
+    expenseBloc.getExpensesResponse.listen((event) {
+      lastDocument = event.lastDocument;
+      setState(() {
+        ViewExpensesScreen.expenses.addAll(event.expenses);
+        isLoading = false;
+      });
+    }).onError((Error) {
+      setState(() {
+        isLoading = false;
+        isLoadingAdditionalData = false;
+      });
+    });
+    getData();
   }
 
   @override
   Widget build(BuildContext context) {
     return getIsAuthenticated()
         ? Scaffold(
-            appBar: const BuildCustomAppBarWidget(
+            appBar: BuildCustomAppBarWidget(
               title: "My expenses",
               showBackButton: false,
-              // showTrailingIcon: true,
-              // trailingIcon: const Icon(Icons.settings),
-              // onTrailingIconPressed: () {
-              //   push(context, const SettingsScreen());
-              // },
-              // trailingIconSize: 25,
+              showTrailingIcon: true,
+              trailingIcon: const Icon(Icons.settings),
+              onTrailingIconPressed: () {
+                push(context, const SettingsScreen()).then((_) {
+                  getData();
+                });
+              },
+              trailingIconSize: 25,
             ),
-            body: ValueListenableBuilder(
-              valueListenable: expenseBox.listenable(),
-              builder: (context, Box<Expense> box, _) {
-                if (box.isEmpty) {
-                  return Center(
-                    child: Text(
-                      "No expenses added yet.",
-                      style:
-                          Theme.of(context).textTheme.headlineLarge?.copyWith(
+            body: Padding(
+              padding: const EdgeInsets.only(left: 20, right: 20, top: 5),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Radio<String>(
+                          value: '1',
+                          activeColor: AppColors.primaryColorOrange,
+                          focusColor: Theme.of(context).dividerColor,
+                          groupValue: selectedOption,
+                          onChanged: (value) {
+                            setState(() {
+                              selectedOption = value!;
+                              isLoading = true;
+                              isLoadingAdditionalData = false;
+                              selectedCategory = Constants.categories[0];
+                            });
+                            getData();
+                          },
+                        ),
+                        Text(
+                          'View All',
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineLarge
+                              ?.copyWith(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 16,
                               ),
+                        ),
+                        const Spacer(),
+                        Radio<String>(
+                          value: '2',
+                          activeColor: AppColors.primaryColorOrange,
+                          focusColor: Theme.of(context).dividerColor,
+                          groupValue: selectedOption,
+                          onChanged: (value) {
+                            setState(() {
+                              selectedOption = value!;
+
+                              isLoading = true;
+                              isLoadingAdditionalData = false;
+                            });
+                            getData();
+                          },
+                        ),
+                        Text(
+                          'Categorized',
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineLarge
+                              ?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                              ),
+                        ),
+                      ],
                     ),
-                  );
-                }
-                return ListView.builder(
-                  itemCount: box.length,
-                  itemBuilder: (context, index) {
-                    final expense = box.getAt(index);
-                    return Container(
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).cardColor,
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                AppColors.primaryColorOrange.withOpacity(0.6),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          // Image Container
-                          expense?.imageUrl?.isNotEmpty == true
-                              ? Container(
-                                  width: 80,
-                                  height: 80,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(5.0),
-                                    border: Border.all(
-                                        color: Theme.of(context).dividerColor,
-                                        width: 0.5),
-                                    image: DecorationImage(
-                                      image:
-                                          FileImage(File(expense!.imageUrl!)),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                )
-                              : Container(
-                                  width: 80,
-                                  height: 80,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(5.0),
-                                    border: Border.all(
-                                        color: Theme.of(context).dividerColor,
-                                        width: 0.5),
-                                  ),
-                                  child: const Center(
-                                      child:
-                                          Icon(Icons.receipt_long, size: 60))),
-
-                          const SizedBox(width: 12), // Spacing
-
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  expense!.category,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  "₹${expense.amount.toStringAsFixed(2)}",
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  formatDate(expense.date.toLocal()),
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                                if (expense.notes != null &&
-                                    expense.notes!.isNotEmpty) ...[
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    expense.notes!,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.copyWith(
-                                          fontStyle: FontStyle.italic,
-                                          color: Theme.of(context).hintColor,
-                                        ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-
-                          // Delete Button
-                          Column(
-                            children: [
-                              IconButton(
-                                icon:
-                                    const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () => _deleteExpense(index),
-                              ),
-                              IconButton(
-                                icon:
-                                    const Icon(Icons.edit, color: Colors.green),
-                                onPressed: () => push(
-                                  context,
-                                  EditExpenseScreen(
-                                    expense: expense,
-                                    index: index,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                );
-              },
+                  ),
+                  const SizedBox(height: 10),
+                  selectedOption == '1'
+                      ? buildAllExpensesList()
+                      : buildCategorizedExpensesList(),
+                  isLoadingAdditionalData
+                      ? const BuildLoadingWidget()
+                      : const SizedBox.shrink()
+                ],
+              ),
             ),
             floatingActionButton: FloatingActionButton(
               heroTag: null,
               onPressed: () {
-                push(context, AddExpenseScreen());
+                push(context, AddExpenseScreen()).then((_) {
+                  getData();
+                });
               },
               backgroundColor: AppColors.primaryColorOrange,
               shape: const CircleBorder(),
@@ -263,11 +272,118 @@ class _ViewExpensesScreenState extends State<ViewExpensesScreen>
           )
         : Scaffold(
             body: Center(
-              child: ElevatedButton(
-                onPressed: _authenticateUser,
-                child: const Text("Authenticate to View Expenses"),
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: BuildElevatedButton(
+                  backgroundColor: AppColors.primaryColorOrange,
+                  width: screenWidth(
+                    context,
+                  ),
+                  height: screenHeight(context, dividedBy: 18),
+                  txt: "Authenticate to view expenses!",
+                  onTap: _authenticateUser,
+                  child: null,
+                ),
               ),
             ),
           );
+  }
+
+  Widget buildAllExpensesList() {
+    return isLoading
+        ? const Center(child: BuildLoadingWidget())
+        : ViewExpensesScreen.expenses.isEmpty
+            ? Expanded(
+                child: Center(
+                  child: Text(
+                    "You haven't added any expenses!",
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                  ),
+                ),
+              )
+            : Expanded(
+                child: ListView.builder(
+                    controller: scrollController,
+                    itemCount: ViewExpensesScreen.expenses.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return GestureDetector(
+                        onTap: () {
+                          push(
+                                  context,
+                                  UpdateExpenseScreen(
+                                      expense:
+                                          ViewExpensesScreen.expenses[index]))
+                              .then((_) {
+                            getData();
+                          });
+                        },
+                        child: BuildExpenseItemTileWidget(
+                            expense: ViewExpensesScreen.expenses[index]),
+                      );
+                    }),
+              );
+  }
+
+  Widget buildCategorizedExpensesList() {
+    return Expanded(
+      child: Column(
+        children: [
+          BuildCustomDropdownWidget(
+              dropDownItems: Constants.categories,
+              initialItem: Constants.categories[0],
+              onChanged: (event) {
+                print("Selected category: $event");
+                setState(() {
+                  selectedCategory = event;
+                });
+                getData();
+              }),
+          const SizedBox(height: 10),
+          isLoading
+              ? const Center(child: BuildLoadingWidget())
+              : ViewExpensesScreen.expenses.isEmpty
+                  ? Expanded(
+                      child: Center(
+                        child: Text(
+                          "You haven't added any expenses in $selectedCategory!",
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineLarge
+                              ?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                        ),
+                      ),
+                    )
+                  : Expanded(
+                      child: ListView.builder(
+                          controller: scrollController,
+                          itemCount: ViewExpensesScreen.expenses.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            return GestureDetector(
+                              onTap: () {
+                                push(
+                                        context,
+                                        UpdateExpenseScreen(
+                                            expense: ViewExpensesScreen
+                                                .expenses[index]))
+                                    .then((_) {
+                                  getData();
+                                });
+                              },
+                              child: BuildExpenseItemTileWidget(
+                                  expense: ViewExpensesScreen.expenses[index]),
+                            );
+                          }),
+                    )
+        ],
+      ),
+    );
   }
 }

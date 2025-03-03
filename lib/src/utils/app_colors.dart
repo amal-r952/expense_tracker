@@ -4,6 +4,7 @@ class AppColors {
   static const Color primaryColorDark = Colors.black;
   static const Color primaryColorLight = Colors.white;
   static const Color primaryColorOrange = Colors.orange;
+  static const Color primaryColorRed = Colors.red;
   static const Color shimmerBaseColor = Color.fromRGBO(234, 235, 244, 1);
   static const Color lightModeScaffoldColor = Color.fromRGBO(248, 248, 248, 1);
   static const Color darkModeScaffoldColor = Colors.black;

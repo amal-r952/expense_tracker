@@ -1,10 +1,12 @@
 import 'dart:io';
 
-import 'package:expense_tracker/src/models/expense_model.dart';
+import 'package:expense_tracker/src/bloc/expense_bloc.dart';
 import 'package:expense_tracker/src/utils/app_colors.dart';
 import 'package:expense_tracker/src/utils/app_toast.dart';
 import 'package:expense_tracker/src/utils/constants.dart';
+import 'package:expense_tracker/src/utils/object_factory.dart';
 import 'package:expense_tracker/src/utils/utils.dart';
+import 'package:expense_tracker/src/widgets/add_or_edit_image_widget.dart';
 import 'package:expense_tracker/src/widgets/build_custom_appbar_widget.dart';
 import 'package:expense_tracker/src/widgets/build_custom_dropdown_widget.dart';
 import 'package:expense_tracker/src/widgets/build_elevated_button.dart';
@@ -21,12 +23,14 @@ class AddExpenseScreen extends StatefulWidget {
 
 class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final _formKey = GlobalKey<FormState>();
+  String imageUrl = "";
   final TextEditingController categoryController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
   final TextEditingController notesController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
   DateTime selectedDate = DateTime.now();
-  final Box<Expense> expenseBox = Hive.box<Expense>('expenses');
+  bool isAddingExpense = false;
+  ExpenseBloc expenseBloc = ExpenseBloc();
 
   List<String> dropDownItems = Constants.categories;
 
@@ -55,20 +59,23 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     }
   }
 
-  Future<void> _pickImage() async {
-    final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _pickedImage = File(pickedFile.path);
-      });
-    }
-  }
-
   @override
   void initState() {
     categoryController.text = dropDownItems[0];
     dateController.text = selectedDate.toIso8601String().split('T')[0];
+    expenseBloc.addExpenseResponse.listen((event) {
+      print("ADD EXPENSE RESPONSE: $event");
+      setState(() {
+        isAddingExpense = false;
+      });
+      AppToasts.showSuccessToastTop(context, "Expense added successfully!");
+      pop(context);
+    }).onError((error, stackTrace) {
+      setState(() {
+        isAddingExpense = false;
+      });
+      AppToasts.showErrorToastTop(context, "Error adding expense!");
+    });
     super.initState();
   }
 
@@ -108,7 +115,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 const SizedBox(height: 15),
 
                 Text(
-                  ' Amount',
+                  ' Amount ${ObjectFactory().appHive.getCurrentCurrency()}',
                   style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
@@ -182,35 +189,23 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
-
-                GestureDetector(
-                  onTap: _pickImage,
-                  child: Container(
-                    width: screenWidth(context),
-                    height: 200,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(12.0),
-                      shape: BoxShape.rectangle,
-                      border: Border.all(
-                          color: Theme.of(context).dividerColor, width: 0.5),
-                      image: _pickedImage != null
-                          ? DecorationImage(
-                              image: FileImage(_pickedImage!),
-                              fit: BoxFit.cover,
-                            )
-                          : null,
-                    ),
-                    child: _pickedImage == null
-                        ? Center(
-                            child: Icon(Icons.add,
-                                size: 40,
-                                color: Theme.of(context).dividerColor),
-                          )
-                        : null,
-                  ),
+                const SizedBox(height: 15),
+                Text(
+                  ' Invoice',
+                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
                 ),
+                const SizedBox(height: 10),
+                ProfilePictureEditWidget(
+                    imageUrl: imageUrl,
+                    image: (event) {
+                      setState(() {
+                        imageUrl = event!;
+                      });
+                      print("IMAGE URL IN ADD EXPENSE PAGE: $event");
+                    })
               ],
             ),
           ),
@@ -232,21 +227,22 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 AppToasts.showErrorToastTop(
                     context, "Please add all the necessary fields!");
                 return;
+              } else if (isAddingExpense) {
+                return;
               }
 
-              expenseBox.add(
-                Expense(
-                  category: categoryController.text,
-                  amount: double.tryParse(amountController.text) ?? 0.0,
-                  date: selectedDate,
-                  notes: notesController.text,
-                  imageUrl: _pickedImage?.path ?? '',
-                ),
-              );
-              AppToasts.showSuccessToastTop(
-                  context, "Expense added successfully!");
+              setState(() {
+                isAddingExpense = true;
+              });
 
-              Navigator.pop(context);
+              expenseBloc.addExpense(
+                category: categoryController.text,
+                amount: convertToINR(double.tryParse(amountController.text)!,
+                    ObjectFactory().appHive.getCurrentCurrencyValue()!),
+                date: selectedDate,
+                imageUrl: imageUrl,
+                notes: notesController.text,
+              );
             }),
       ),
     );
